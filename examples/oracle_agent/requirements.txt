@@ -1,0 +1,2 @@
+deepagents>=0.5.0a1
+deepagents-oracle>=0.1.0a1
