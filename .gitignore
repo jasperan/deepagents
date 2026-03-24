@@ -232,6 +232,7 @@ oracle-data/
 .agents/
 .crush/
 .openhands/
+.pi/
 .serena/
 
 # Plan files
@@ -246,3 +247,8 @@ progress.md
 # Generated content
 content/
 dogfood-output/
+
+# Remotion workspace output
+assets/node_modules/
+assets/renders/
+assets/.remotion/
