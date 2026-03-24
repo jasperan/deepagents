@@ -9,126 +9,140 @@
 </div>
 
 <div align="center">
-  <h3>The batteries-included agent harness.</h3>
+  <h3>The batteries-included agent harness + Oracle AI Database</h3>
 </div>
 
 <div align="center">
-  <a href="https://opensource.org/licenses/MIT" target="_blank"><img src="https://img.shields.io/pypi/l/deepagents" alt="PyPI - License"></a>
-  <a href="https://pypistats.org/packages/deepagents" target="_blank"><img src="https://img.shields.io/pepy/dt/deepagents" alt="PyPI - Downloads"></a>
-  <a href="https://pypi.org/project/deepagents/#history" target="_blank"><img src="https://img.shields.io/pypi/v/deepagents?label=%20" alt="Version"></a>
-  <a href="https://x.com/langchain" target="_blank"><img src="https://img.shields.io/twitter/url/https/twitter.com/langchain.svg?style=social&label=Follow%20%40LangChain" alt="Twitter / X"></a>
+  <a href="https://opensource.org/licenses/MIT" target="_blank"><img src="https://img.shields.io/pypi/l/deepagents" alt="License"></a>
+  <a href="https://pypi.org/project/deepagents-oracle/" target="_blank"><img src="https://img.shields.io/pypi/v/deepagents-oracle?label=deepagents-oracle" alt="PyPI"></a>
 </div>
 
 <br>
 
-Deep Agents is an agent harness. An opinionated, ready-to-run agent out of the box. Instead of wiring up prompts, tools, and context management yourself, you get a working agent immediately and customize what you need.
+Fork of [LangChain Deep Agents](https://github.com/langchain-ai/deepagents) with **Oracle AI Database** as the persistent storage and memory layer.
 
-**What's included:**
+## What Oracle Adds
 
-- **Planning** — `write_todos` for task breakdown and progress tracking
-- **Filesystem** — `read_file`, `write_file`, `edit_file`, `ls`, `glob`, `grep` for reading and writing context
-- **Shell access** — `execute` for running commands (with sandboxing)
-- **Sub-agents** — `task` for delegating work with isolated context windows
-- **Smart defaults** — Prompts that teach the model how to use these tools effectively
-- **Context management** — Auto-summarization when conversations get long, large outputs saved to files
+- **ACID-guaranteed agent memory** that survives crashes, restarts, and redeployments
+- **Cross-session conversation history** stored in Oracle, not lost when the process dies
+- **In-database vector embeddings** for semantic search over agent memory (via Oracle AI Vector Search)
+- **Zero external API calls** for storage. Everything lives in the database
 
-> [!NOTE]
-> Looking for the JS/TS library? Check out [deepagents.js](https://github.com/langchain-ai/deepagentsjs).
+## Two Deployment Modes
+
+**Local development:** Oracle Database 26ai Free in a Docker container. One command to start.
+
+**Production:** Oracle Autonomous Database in OCI. Set 3 env vars and you're connected.
 
 ## Quickstart
 
 ```bash
-pip install deepagents
-# or
-uv add deepagents
+pip install deepagents deepagents-oracle
 ```
 
-```python
-from deepagents import create_deep_agent
-
-agent = create_deep_agent()
-result = agent.invoke({"messages": [{"role": "user", "content": "Research LangGraph and write a summary"}]})
+Start Oracle locally:
+```bash
+docker compose -f oracle/docker-compose.yml --profile freepdb up -d
+bash oracle/scripts/setup-oracle.sh
 ```
 
-The agent can plan, read/write files, and manage its own context. Add tools, customize prompts, or swap models as needed.
-
-> [!TIP]
-> For developing, debugging, and deploying AI agents and LLM applications, see [LangSmith](https://docs.langchain.com/langsmith/home).
-
-## Customization
-
-Add your own tools, swap models, customize prompts, configure sub-agents, and more. See the [documentation](https://docs.langchain.com/oss/python/deepagents/overview) for full details.
-
+Run an agent with persistent memory:
 ```python
-from langchain.chat_models import init_chat_model
+from deepagents_oracle import create_oracle_deep_agent
 
-agent = create_deep_agent(
-    model=init_chat_model("openai:gpt-4o"),
-    tools=[my_custom_tool],
-    system_prompt="You are a research assistant.",
+agent = create_oracle_deep_agent()
+result = agent.invoke(
+    {"messages": [{"role": "user", "content": "Research LangGraph and save findings to /memory/langgraph.md"}]}
 )
 ```
 
-MCP is supported via [`langchain-mcp-adapters`](https://github.com/langchain-ai/langchain-mcp-adapters).
+Memory, conversation history, and skills persist in Oracle. Restart the agent and everything's still there.
 
-## Deep Agents CLI
+## How It Works
 
-A pre-built coding agent in your terminal — similar to Claude Code or Cursor — powered by any LLM. One install command and you're up and running.
+`create_oracle_deep_agent()` wires up a `CompositeBackend` that routes persistent paths to Oracle and keeps ephemeral data in memory:
 
-<p align="center">
-  <img src="libs/cli/images/cli.png" alt="Deep Agents CLI" width="600"/>
-</p>
+| Path prefix | Backend | Persistence |
+|------------|---------|-------------|
+| `/memory/*` | Oracle `da_files` table | Durable, cross-session |
+| `/history/*` | Oracle `da_files` table | Durable, cross-session |
+| `/skills/*` | Oracle `da_files` table | Durable, cross-session |
+| Everything else | `StateBackend` (in-memory) | Ephemeral, per-run |
 
-```bash
-curl -LsSf https://raw.githubusercontent.com/langchain-ai/deepagents/main/libs/cli/scripts/install.sh | bash
+## Explicit Wiring
+
+For more control, wire the backends yourself:
+
+```python
+from deepagents import create_deep_agent
+from deepagents.backends import StateBackend, CompositeBackend
+from deepagents_oracle import OracleStoreBackend, OracleConfig
+
+config = OracleConfig()  # reads DEEPAGENTS_* env vars
+oracle = OracleStoreBackend(config)
+
+backend = CompositeBackend(
+    default=StateBackend,
+    routes={"/memory/": oracle, "/history/": oracle, "/skills/": oracle},
+)
+
+agent = create_deep_agent(backend=backend, memory=["/memory/AGENTS.md"])
 ```
 
-**Highlights:**
+## Configuration
 
-- **Interactive TUI** — rich terminal interface with streaming responses
-- **Web search** — ground responses in live information
-- **Headless mode** — run non-interactively for scripting and CI
-- Plus all SDK features out of the box — remote sandboxes, persistent memory, custom skills, and human-in-the-loop approval
+All config via environment variables with `DEEPAGENTS_` prefix:
 
-See the [CLI documentation](https://docs.langchain.com/oss/python/deepagents/cli/overview) for the full feature set.
+```bash
+# Mode: freepdb (local) or adb (cloud)
+DEEPAGENTS_ORACLE_MODE=freepdb
 
-## LangGraph Native
+# Credentials
+DEEPAGENTS_ORACLE_USER=deepagents
+DEEPAGENTS_ORACLE_PASSWORD=DeepAgents2024
 
-`create_deep_agent` returns a compiled [LangGraph](https://docs.langchain.com/oss/python/langgraph/overview) graph. Use it with streaming, Studio, checkpointers, or any LangGraph feature.
+# FreePDB connection
+DEEPAGENTS_ORACLE_HOST=localhost
+DEEPAGENTS_ORACLE_PORT=1521
+DEEPAGENTS_ORACLE_SERVICE=FREEPDB1
 
-## FAQ
+# ADB connection (set these instead for cloud)
+# DEEPAGENTS_ORACLE_DSN=(description=...)
+# DEEPAGENTS_ORACLE_WALLET_PATH=/path/to/wallet
+```
 
-### Why should I use this?
+See [`oracle/.env.example`](oracle/.env.example) for the full template.
 
-- **100% open source** — MIT licensed, fully extensible
-- **Provider agnostic** — Works with any Large Language Model that supports tool calling, including both frontier and open models
-- **Built on LangGraph** — Production-ready runtime with streaming, persistence, and checkpointing
-- **Batteries included** — Planning, file access, sub-agents, and context management work out of the box
-- **Get started in seconds** — `uv add deepagents` and you have a working agent
-- **Customize in minutes** — Add tools, swap models, tune prompts when you need to
+## GitHub Codespaces
 
----
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jasperan/deepagents-oracle?quickstart=1)
 
-## Documentation
+The `.devcontainer/` config spins up Oracle 26ai Free automatically. Open the repo in Codespaces and start coding.
 
-- [docs.langchain.com](https://docs.langchain.com/oss/python/deepagents/overview) – Comprehensive documentation, including conceptual overviews and guides
-- [reference.langchain.com/python](https://reference.langchain.com/python/deepagents/) – API reference docs for Deep Agents packages
-- [Chat LangChain](https://chat.langchain.com/) – Chat with the LangChain documentation and get answers to your questions
+## Project Structure
 
-**Discussions**: Visit the [LangChain Forum](https://forum.langchain.com) to connect with the community and share all of your technical questions, ideas, and feedback.
+```
+libs/partners/oracle/     # Partner package (pip install deepagents-oracle)
+  deepagents_oracle/
+    config.py              # OracleConfig (Pydantic BaseSettings)
+    connection.py          # Connection pool manager
+    backend.py             # OracleStoreBackend (BackendProtocol)
+    schema.py              # DDL for da_files table
+    agent.py               # create_oracle_deep_agent() factory
+oracle/                    # Docker infrastructure
+  docker-compose.yml       # FreePDB + ADB profiles
+  scripts/setup-oracle.sh  # User creation + schema init
+examples/oracle_agent/     # Working example
+```
 
-## Additional resources
+## Full Deep Agents Docs
 
-- **[Examples](examples/)** — Working agents and patterns
-- [Contributing Guide](https://docs.langchain.com/oss/python/contributing/overview) – Learn how to contribute to LangChain projects and find good first issues.
-- [Code of Conduct](https://github.com/langchain-ai/langchain/?tab=coc-ov-file) – Our community guidelines and standards for participation.
+This fork inherits all upstream Deep Agents capabilities: planning, filesystem tools, sub-agents, context management, and more.
 
----
+- [Deep Agents SDK Documentation](https://docs.langchain.com/oss/python/deepagents/overview)
+- [Deep Agents CLI](https://docs.langchain.com/oss/python/deepagents/cli/overview)
+- [Upstream Repository](https://github.com/langchain-ai/deepagents)
 
-## Acknowledgements
+## License
 
-This project was primarily inspired by Claude Code, and initially was largely an attempt to see what made Claude Code general purpose, and make it even more so.
-
-## Security
-
-Deep Agents follows a "trust the LLM" model. The agent can do anything its tools allow. Enforce boundaries at the tool/sandbox level, not by expecting the model to self-police. See the [security policy](https://github.com/langchain-ai/deepagents?tab=security-ov-file) for more information.
+MIT. See [LICENSE](LICENSE).

@@ -223,3 +223,26 @@ libs/cli/TEXTUAL_PROGRESS.md
 */tmp/.DS_Store
 
 CLAUDE.md
+
+# Oracle
+oracle-data/
+*.wallet
+
+# Agent/skill directories (local only)
+.agents/
+.crush/
+.openhands/
+.serena/
+
+# Plan files
+docs/plans/
+task_plan.md
+findings.md
+progress.md
+
+# Playwright MCP
+.playwright-mcp/
+
+# Generated content
+content/
+dogfood-output/
