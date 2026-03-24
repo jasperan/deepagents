@@ -30,6 +30,32 @@ class TestCreateOracleDeepAgent:
     @patch("deepagents_oracle.agent.create_deep_agent")
     @patch("deepagents_oracle.agent.OracleStoreBackend")
     @patch("deepagents_oracle.agent.OracleConnectionManager")
+    def test_does_not_pass_config_to_backend(self, mock_conn_cls, mock_backend_cls, mock_create):
+        mock_create.return_value = MagicMock()
+        mock_backend_cls.return_value = MagicMock()
+        mock_conn_cls.return_value = MagicMock()
+
+        create_oracle_deep_agent()
+
+        backend_kwargs = mock_backend_cls.call_args.kwargs
+        assert "config" not in backend_kwargs
+
+    @patch("deepagents_oracle.agent.create_deep_agent")
+    @patch("deepagents_oracle.agent.OracleStoreBackend")
+    @patch("deepagents_oracle.agent.OracleConnectionManager")
+    def test_backend_is_factory_callable(self, mock_conn_cls, mock_backend_cls, mock_create):
+        mock_create.return_value = MagicMock()
+        mock_backend_cls.return_value = MagicMock()
+        mock_conn_cls.return_value = MagicMock()
+
+        create_oracle_deep_agent()
+
+        call_kwargs = mock_create.call_args.kwargs
+        assert callable(call_kwargs["backend"])
+
+    @patch("deepagents_oracle.agent.create_deep_agent")
+    @patch("deepagents_oracle.agent.OracleStoreBackend")
+    @patch("deepagents_oracle.agent.OracleConnectionManager")
     def test_passes_through_model_and_tools(self, mock_conn_cls, mock_backend_cls, mock_create):
         mock_create.return_value = MagicMock()
         mock_backend_cls.return_value = MagicMock()

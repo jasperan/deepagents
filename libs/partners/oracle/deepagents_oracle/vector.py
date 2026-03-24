@@ -102,6 +102,7 @@ class OracleVectorBackend(OracleStoreBackend):
         Generates an embedding from *content* via the configured Embeddings
         model and stores it alongside the file data.
         """
+        self._ensure_initialized()
         file_data = create_file_data(content)
         embedding_vector = self._embeddings.embed_query(content)
         embedding_str = "[" + ", ".join(str(v) for v in embedding_vector) + "]"
@@ -144,6 +145,7 @@ class OracleVectorBackend(OracleStoreBackend):
             A ``GrepResult`` whose matches are ordered by similarity (closest first).
             Each match contains the file path and the first line of content as text.
         """
+        self._ensure_initialized()
         query_vector = self._embeddings.embed_query(query)
         qvec_str = "[" + ", ".join(str(v) for v in query_vector) + "]"
 

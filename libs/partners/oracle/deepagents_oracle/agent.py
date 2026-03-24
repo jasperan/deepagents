@@ -57,17 +57,17 @@ def create_oracle_deep_agent(
     conn_manager.connect()
 
     oracle_backend = OracleStoreBackend(
-        config=oracle_config,
         connection_manager=conn_manager,
         namespace=namespace,
     )
 
     routes = dict.fromkeys(persistent_routes, oracle_backend)
 
-    backend = CompositeBackend(
-        default=StateBackend,
-        routes=routes,
-    )
+    def _backend_factory(runtime: object) -> CompositeBackend:
+        return CompositeBackend(
+            default=StateBackend(runtime),
+            routes=routes,
+        )
 
     if memory is None:
         memory = ["/memory/AGENTS.md"]
@@ -77,7 +77,7 @@ def create_oracle_deep_agent(
     return create_deep_agent(
         model=model,
         tools=tools,
-        backend=backend,
+        backend=_backend_factory,
         memory=memory,
         skills=skills,
         **kwargs,
