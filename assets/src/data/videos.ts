@@ -44,6 +44,17 @@ export type ComparisonPanel = {
   rightItems: string[];
 };
 
+export type FlowPanel = {
+  kind: 'flow';
+  title: string;
+  steps: Array<{
+    eyebrow: string;
+    title: string;
+    body: string;
+    tone?: 'oracle' | 'vector' | 'cloud';
+  }>;
+};
+
 export type RouterPanel = {
   kind: 'router';
   title: string;
@@ -56,7 +67,7 @@ export type RouterPanel = {
   footer?: string;
 };
 
-export type Panel = CodePanel | TerminalPanel | TablePanel | CalloutPanel | ComparisonPanel | RouterPanel;
+export type Panel = CodePanel | TerminalPanel | TablePanel | CalloutPanel | ComparisonPanel | FlowPanel | RouterPanel;
 
 export type BenefitCard = {
   eyebrow: string;
@@ -481,30 +492,53 @@ export const campaignVideos: VideoSpec[] = [
       highlight: [0, 1, 2],
     },
     rightPanel: {
-      kind: 'callout',
-      title: 'What changes in practice',
-      body: 'Local mode uses host, port, and service. Cloud mode switches to DSN and optional wallet.',
-      bullets: ['DEEPAGENTS_ORACLE_MODE=freepdb', 'DEEPAGENTS_ORACLE_MODE=adb', 'same factory, same backend story'],
-      stat: 'Configuration swap, not a rewrite',
+      kind: 'code',
+      title: '.env transition',
+      language: 'env',
+      lines: [
+        'DEEPAGENTS_ORACLE_MODE=freepdb',
+        'DEEPAGENTS_ORACLE_HOST=localhost',
+        '# switch environments',
+        'DEEPAGENTS_ORACLE_MODE=adb',
+        'DEEPAGENTS_ORACLE_DSN=(description=...)',
+        'DEEPAGENTS_ORACLE_WALLET_PATH=/path/to/wallet',
+      ],
+      highlight: [0, 1, 3, 4, 5],
     },
     evidenceBullets: [
-      'That is exactly how you want the demo-to-production bridge to feel.',
-      'The operator learns one mental model and keeps it.',
-      'Oracle stays central without making the app code ugly.',
+      'The local and cloud modes are visible right in config.',
+      'That keeps the mental model stable while the target changes.',
+      'A cloud bridge feels better when the code path barely flinches.',
     ],
     architectureTitle: 'The deployment ladder',
     architecturePanel: {
-      kind: 'comparison',
-      title: 'Local and cloud line up cleanly',
-      leftTitle: 'Oracle Database 26ai Free',
-      rightTitle: 'Autonomous Database',
-      leftItems: ['localhost:1521/FREEPDB1', 'Docker profile', 'Fast iteration'],
-      rightItems: ['DSN + wallet', 'Cloud target', 'Production runway'],
+      kind: 'flow',
+      title: 'One Oracle story, three steps',
+      steps: [
+        {
+          eyebrow: 'Step 1',
+          title: 'Build locally',
+          body: 'Use Oracle Database 26ai Free with host, port, and service for the fastest dev loop.',
+          tone: 'oracle',
+        },
+        {
+          eyebrow: 'Step 2',
+          title: 'Swap the connection mode',
+          body: 'Flip `oracle_mode`, point at a DSN, and add the wallet path when needed.',
+          tone: 'cloud',
+        },
+        {
+          eyebrow: 'Step 3',
+          title: 'Keep the same agent shape',
+          body: 'The agent factory, backend wiring, and persistence story still look the same.',
+          tone: 'vector',
+        },
+      ],
     },
     architectureBullets: [
-      'You can tell a full lifecycle story with almost no visual cheating.',
-      'That makes this part of the campaign useful for both builders and decision-makers.',
-      'It also gives the fork an unusually clean deployment narrative.',
+      'The jump to ADB reads like a deployment step, not a new product.',
+      'That makes the video stronger for both builders and platform audiences.',
+      'It also gives the fork a much cleaner lifecycle story.',
     ],
     benefitTitle: 'Why that matters',
     benefitCards: [
@@ -535,34 +569,50 @@ export const campaignVideos: VideoSpec[] = [
       rightItems: ['agent harness', 'Oracle AI Database', 'persistent memory', 'semantic retrieval'],
     },
     rightPanel: {
-      kind: 'callout',
-      title: 'What gets simpler',
-      body: 'Storage, memory, and semantic retrieval can live under one durable story instead of fragmenting into a multi-service diagram.',
-      bullets: ['less service glue', 'fewer operational seams', 'easier to explain'],
-      stat: 'Consolidation is a feature',
+      kind: 'table',
+      title: 'What consolidates',
+      columns: ['concern', 'typical', 'here'],
+      rows: [
+        ['memory', 'separate store', 'Oracle AI Database'],
+        ['semantic retrieval', 'vector sidecar', 'Oracle AI Database'],
+        ['health + pool', 'extra glue', 'OracleConnectionManager'],
+      ],
+      highlightRow: 1,
     },
     evidenceBullets: [
       'This is one of the best product-level messages in the whole fork.',
-      'People feel architecture complexity before they measure it.',
-      'A cleaner diagram often wins the room before the benchmark ever appears.',
+      'People feel architectural sprawl before they can name it.',
+      'Oracle gives the system a tighter center of gravity.',
     ],
-    architectureTitle: 'Operational proof inside the repo',
+    architectureTitle: 'What the cleaner stack actually looks like',
     architecturePanel: {
-      kind: 'code',
-      title: 'OracleConnectionManager',
-      language: 'python',
-      lines: [
-        'self._pool = oracledb.create_pool(**kwargs)',
-        'def get_connection(self) -> Generator[Connection, None, None]:',
-        'def health_check(self) -> bool:',
-        '    cur.execute("SELECT 1 FROM DUAL")',
+      kind: 'flow',
+      title: 'From sprawl to one durable data plane',
+      steps: [
+        {
+          eyebrow: 'Before',
+          title: 'Split persistence story',
+          body: 'Memory, retrieval, and operational glue drift into separate boxes and separate seams.',
+          tone: 'vector',
+        },
+        {
+          eyebrow: 'Center',
+          title: 'Oracle AI Database',
+          body: 'Persistent memory, semantic retrieval, and durable state collapse into one stronger center.',
+          tone: 'oracle',
+        },
+        {
+          eyebrow: 'After',
+          title: 'Cleaner operating shape',
+          body: 'The app has fewer moving parts to explain, monitor, and keep stitched together.',
+          tone: 'cloud',
+        },
       ],
-      highlight: [0, 2, 3],
     },
     architectureBullets: [
-      'The repo already encodes pool management and health checks in one place.',
-      'That is the kind of detail that makes a cleaner architecture feel real.',
-      'Oracle is not only the storage layer here. It also simplifies the operating picture.',
+      'The cleaner diagram is backed by real connection-pool and health-check code in the repo.',
+      'That makes the simplification argument feel grounded instead of aspirational.',
+      'Oracle is carrying both storage weight and architectural clarity here.',
     ],
     benefitTitle: 'Why teams care',
     benefitCards: [
@@ -585,37 +635,58 @@ export const campaignVideos: VideoSpec[] = [
     introPoints: ['Upstream strengths', 'Oracle as force multiplier', 'Production-shaped story'],
     evidenceTitle: 'What Deep Agents already brings',
     leftPanel: {
-      kind: 'callout',
-      title: 'Upstream Deep Agents',
-      body: 'The fork inherits planning, filesystem tools, sub-agent spawning, shell execution, context management, and smart defaults.',
-      bullets: ['planning', 'tools', 'sub-agents', 'context management'],
-      stat: 'Batteries-included harness',
+      kind: 'table',
+      title: 'Upstream Deep Agents strengths',
+      columns: ['capability', 'what it gives you'],
+      rows: [
+        ['planning', 'structured multi-step agent work'],
+        ['tools', 'real interaction surface'],
+        ['sub-agents', 'parallelizable execution'],
+        ['context', 'memory and control scaffolding'],
+      ],
+      highlightRow: 2,
     },
     rightPanel: {
       kind: 'callout',
-      title: 'What Oracle adds',
-      body: 'The Oracle layer makes memory durable, retrieval richer, and the deployment story cleaner.',
-      bullets: ['persistent memory', 'cross-session history', 'semantic search', 'local-to-cloud bridge'],
-      stat: 'The persistence layer stops being flimsy',
+      title: 'What Oracle changes',
+      body: 'Oracle upgrades the part agent demos usually undersell: durable memory, stronger retrieval, and a cleaner deployment narrative.',
+      bullets: ['persistent memory', 'cross-session history', 'semantic retrieval', 'local-to-cloud continuity'],
+      stat: 'The harness starts to feel production-shaped',
     },
     evidenceBullets: [
       'This is where the campaign widens from code proof to product narrative.',
-      'Oracle does not replace the harness. It upgrades the part that often feels weakest in agent demos.',
-      'That changes how serious the whole system feels.',
+      'Oracle does not replace the harness. It hardens the layer people usually trust the least.',
+      'That changes how serious the whole stack feels.',
     ],
-    architectureTitle: 'The capability stack',
+    architectureTitle: 'The capability stack after Oracle',
     architecturePanel: {
-      kind: 'comparison',
-      title: 'Harness vs durable system',
-      leftTitle: 'Agent harness',
-      rightTitle: 'Agent harness + Oracle AI Database',
-      leftItems: ['planning', 'tool use', 'sub-agents', 'context handling'],
-      rightItems: ['durable memory', 'recoverable sessions', 'semantic retrieval', 'cloud runway'],
+      kind: 'flow',
+      title: 'How the system grows up',
+      steps: [
+        {
+          eyebrow: 'Layer 1',
+          title: 'Deep Agents harness',
+          body: 'Planning, tools, sub-agents, and context management give the system its agent behavior.',
+          tone: 'vector',
+        },
+        {
+          eyebrow: 'Layer 2',
+          title: 'Oracle memory layer',
+          body: 'Durable memory and recoverable sessions give that behavior continuity across time.',
+          tone: 'oracle',
+        },
+        {
+          eyebrow: 'Layer 3',
+          title: 'Semantic retrieval + cloud runway',
+          body: 'Vector search and the bridge to ADB make the story sharper for real deployment conversations.',
+          tone: 'cloud',
+        },
+      ],
     },
     architectureBullets: [
       'The Oracle layer makes the stack easier to position for real teams.',
       'It does not just add storage. It changes the perceived maturity of the system.',
-      'That makes this a strong closer before the hero film.',
+      'That makes this a stronger setup for the final hero film.',
     ],
     benefitTitle: 'Why the broader audience cares',
     benefitCards: [
