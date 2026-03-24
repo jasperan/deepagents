@@ -7,3 +7,10 @@ from deepagents_oracle.config import OracleConfig
 from deepagents_oracle.connection import OracleConnectionManager
 
 __all__ = ["OracleConfig", "OracleConnectionManager", "OracleStoreBackend", "__version__", "create_oracle_deep_agent"]
+
+try:
+    from deepagents_oracle.vector import OracleVectorBackend
+except ImportError:
+    pass
+else:
+    __all__ = [*__all__, "OracleVectorBackend"]  # noqa: PLE0604
