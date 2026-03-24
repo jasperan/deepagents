@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import base64
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from deepagents.backends.protocol import (
     BackendProtocol,
@@ -36,7 +36,8 @@ from deepagents.backends.utils import (
     update_file_data,
 )
 
-from deepagents_oracle.connection import OracleConnectionManager
+if TYPE_CHECKING:
+    from deepagents_oracle.connection import OracleConnectionManager
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ WHERE namespace = :namespace AND file_path = :file_path
 """
 
 
-def _read_clob(value: Any) -> str:
+def _read_clob(value: Any) -> str:  # noqa: ANN401
     """Read a CLOB/LOB value, handling both str and LOB objects."""
     if isinstance(value, str):
         return value
@@ -100,6 +101,7 @@ class OracleStoreBackend(BackendProtocol):
         connection_manager: OracleConnectionManager,
         namespace: str = "default",
     ) -> None:
+        """Initialize with a connection manager and namespace."""
         self._cm = connection_manager
         self._namespace = namespace
 
@@ -108,34 +110,32 @@ class OracleStoreBackend(BackendProtocol):
     def _get_all_files(self) -> dict[str, FileData]:
         """Load every file in the namespace as ``{path: FileData}``."""
         files: dict[str, FileData] = {}
-        with self._cm.get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(_SELECT_ALL_SQL, {"namespace": self._namespace})
-                for row in cur.fetchall():
-                    file_path, encoding, content_raw, created_at, modified_at = row
-                    files[file_path] = FileData(
-                        content=_read_clob(content_raw),
-                        encoding=encoding or "utf-8",
-                        created_at=created_at or "",
-                        modified_at=modified_at or "",
-                    )
-        return files
-
-    def _fetch_one(self, file_path: str) -> FileData | None:
-        """Fetch a single file's data, or ``None`` if missing."""
-        with self._cm.get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(_SELECT_ONE_SQL, {"namespace": self._namespace, "file_path": file_path})
-                row = cur.fetchone()
-                if row is None:
-                    return None
-                content_raw, encoding, created_at, modified_at = row
-                return FileData(
+        with self._cm.get_connection() as conn, conn.cursor() as cur:
+            cur.execute(_SELECT_ALL_SQL, {"namespace": self._namespace})
+            for row in cur.fetchall():
+                file_path, encoding, content_raw, created_at, modified_at = row
+                files[file_path] = FileData(
                     content=_read_clob(content_raw),
                     encoding=encoding or "utf-8",
                     created_at=created_at or "",
                     modified_at=modified_at or "",
                 )
+        return files
+
+    def _fetch_one(self, file_path: str) -> FileData | None:
+        """Fetch a single file's data, or ``None`` if missing."""
+        with self._cm.get_connection() as conn, conn.cursor() as cur:
+            cur.execute(_SELECT_ONE_SQL, {"namespace": self._namespace, "file_path": file_path})
+            row = cur.fetchone()
+            if row is None:
+                return None
+            content_raw, encoding, created_at, modified_at = row
+            return FileData(
+                content=_read_clob(content_raw),
+                encoding=encoding or "utf-8",
+                created_at=created_at or "",
+                modified_at=modified_at or "",
+            )
 
     # -- BackendProtocol methods ---------------------------------------------
 
@@ -162,10 +162,9 @@ class OracleStoreBackend(BackendProtocol):
 
     def read(self, file_path: str, offset: int = 0, limit: int = 2000) -> ReadResult:
         """SELECT content from ``da_files``, then slice with ``slice_read_response()``."""
-        with self._cm.get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(_SELECT_ONE_SQL, {"namespace": self._namespace, "file_path": file_path})
-                row = cur.fetchone()
+        with self._cm.get_connection() as conn, conn.cursor() as cur:
+            cur.execute(_SELECT_ONE_SQL, {"namespace": self._namespace, "file_path": file_path})
+            row = cur.fetchone()
 
         if row is None:
             return ReadResult(error=f"File '{file_path}' not found")
@@ -245,7 +244,7 @@ class OracleStoreBackend(BackendProtocol):
             if not fp.startswith(normalized_path):
                 continue
 
-            relative = fp[len(normalized_path):]
+            relative = fp[len(normalized_path) :]
 
             if "/" in relative:
                 subdir_name = relative.split("/")[0]
@@ -278,10 +277,7 @@ class OracleStoreBackend(BackendProtocol):
         infos: list[FileInfo] = []
         for p in paths:
             fd = files.get(p)
-            if fd:
-                size = len(fd.get("content", ""))
-            else:
-                size = 0
+            size = len(fd.get("content", "")) if fd else 0
             infos.append(
                 {
                     "path": p,

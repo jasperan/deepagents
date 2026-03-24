@@ -2,17 +2,20 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from deepagents import create_deep_agent
 from deepagents.backends import CompositeBackend, StateBackend
-from langchain_core.language_models import BaseChatModel
-from langchain_core.tools import BaseTool
 
 from deepagents_oracle.backend import OracleStoreBackend
 from deepagents_oracle.config import OracleConfig
 from deepagents_oracle.connection import OracleConnectionManager
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from langchain_core.language_models import BaseChatModel
+    from langchain_core.tools import BaseTool
 
 DEFAULT_PERSISTENT_ROUTES = ("/memory/", "/history/", "/skills/")
 
@@ -26,8 +29,8 @@ def create_oracle_deep_agent(
     persistent_routes: Sequence[str] = DEFAULT_PERSISTENT_ROUTES,
     memory: list[str] | None = None,
     skills: list[str] | None = None,
-    **kwargs: Any,
-) -> Any:
+    **kwargs: object,
+) -> object:
     """Create a deep agent with Oracle AI Database persistence.
 
     Sets up a ``CompositeBackend`` that routes persistent paths
@@ -59,7 +62,7 @@ def create_oracle_deep_agent(
         namespace=namespace,
     )
 
-    routes = {route: oracle_backend for route in persistent_routes}
+    routes = dict.fromkeys(persistent_routes, oracle_backend)
 
     backend = CompositeBackend(
         default=StateBackend,

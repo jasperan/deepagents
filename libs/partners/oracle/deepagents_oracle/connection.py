@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import contextlib
 import logging
-from collections.abc import Generator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import oracledb
 
-from deepagents_oracle.config import OracleConfig
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from deepagents_oracle.config import OracleConfig
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,7 @@ class OracleConnectionManager:
     """
 
     def __init__(self, config: OracleConfig) -> None:
+        """Initialize with Oracle configuration and build DSN."""
         self.config = config
         self.dsn = config.get_dsn()
         self._pool: oracledb.ConnectionPool | None = None
@@ -80,11 +83,10 @@ class OracleConnectionManager:
     def health_check(self) -> bool:
         """Run SELECT 1 FROM DUAL to verify connectivity."""
         try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT 1 FROM DUAL")
-                    row = cur.fetchone()
-                    return row is not None and row[0] == 1
+            with self.get_connection() as conn, conn.cursor() as cur:
+                cur.execute("SELECT 1 FROM DUAL")
+                row = cur.fetchone()
+                return row is not None and row[0] == 1
         except Exception:
             logger.exception("Oracle health check failed")
             return False

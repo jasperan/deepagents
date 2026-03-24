@@ -16,7 +16,7 @@ class TestCreateOracleDeepAgent:
         mock_mgr = MagicMock()
         mock_conn_cls.return_value = mock_mgr
 
-        agent = create_oracle_deep_agent()
+        create_oracle_deep_agent()
 
         mock_conn_cls.assert_called_once()
         mock_mgr.connect.assert_called_once()

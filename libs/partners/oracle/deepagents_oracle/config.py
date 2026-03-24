@@ -17,7 +17,7 @@ class OracleConfig(BaseSettings):
 
     oracle_mode: Literal["freepdb", "adb"] = "freepdb"
     oracle_user: str = "deepagents"
-    oracle_password: str = "DeepAgents2024"
+    oracle_password: str = "DeepAgents2024"  # noqa: S105
     oracle_host: str = "localhost"
     oracle_port: int = 1521
     oracle_service: str = "FREEPDB1"

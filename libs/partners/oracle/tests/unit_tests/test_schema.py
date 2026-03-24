@@ -1,6 +1,6 @@
 """Tests for Oracle schema initialization."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import oracledb
 import pytest
@@ -30,7 +30,7 @@ class TestInitSchema:
     def _make_mock_conn(self):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_conn.cursor.return_value.__enter__ = lambda s: mock_cursor
+        mock_conn.cursor.return_value.__enter__ = lambda _s: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         return mock_conn, mock_cursor
 
@@ -79,6 +79,6 @@ class TestInitSchema:
             init_schema(mock_conn, vector=False)
 
     def test_init_commits(self):
-        mock_conn, mock_cursor = self._make_mock_conn()
+        mock_conn, _mock_cursor = self._make_mock_conn()
         init_schema(mock_conn, vector=False)
         mock_conn.commit.assert_called_once()

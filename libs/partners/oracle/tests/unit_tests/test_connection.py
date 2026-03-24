@@ -90,9 +90,8 @@ class TestConnectionManagerPool:
         config = OracleConfig()
         manager = OracleConnectionManager(config)
 
-        with pytest.raises(RuntimeError, match="Connection pool not initialized"):
-            with manager.get_connection():
-                pass
+        with pytest.raises(RuntimeError, match="Connection pool not initialized"), manager.get_connection():
+            pass
 
     @patch("deepagents_oracle.connection.oracledb")
     def test_connect_is_idempotent(self, mock_oracledb):

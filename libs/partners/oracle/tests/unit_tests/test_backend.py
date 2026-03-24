@@ -3,21 +3,19 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from deepagents_oracle.backend import OracleStoreBackend
-from deepagents_oracle.config import OracleConfig
 from deepagents_oracle.connection import OracleConnectionManager
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_cursor():
     """Return a MagicMock cursor that tracks execute/fetchone/fetchall calls."""
     cursor = MagicMock()
@@ -27,7 +25,7 @@ def mock_cursor():
     return cursor
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_conn(mock_cursor):
     """Return a MagicMock connection whose cursor() context manager yields *mock_cursor*."""
     conn = MagicMock()
@@ -40,7 +38,7 @@ def mock_conn(mock_cursor):
     return conn
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_manager(mock_conn):
     """Return a MagicMock OracleConnectionManager whose get_connection yields *mock_conn*."""
     manager = MagicMock(spec=OracleConnectionManager)
@@ -53,15 +51,13 @@ def mock_manager(mock_conn):
     return manager
 
 
-@pytest.fixture()
+@pytest.fixture
 def backend(mock_manager):
     """Return an OracleStoreBackend wired to the mock manager."""
     return OracleStoreBackend(connection_manager=mock_manager, namespace="test_ns")
 
 
-# ---------------------------------------------------------------------------
-# write()
-# ---------------------------------------------------------------------------
+# -- write ------------------------------------------------------------------
 
 
 class TestWrite:
@@ -82,9 +78,7 @@ class TestWrite:
         assert result.path == "/app/hello.txt"
 
 
-# ---------------------------------------------------------------------------
-# read()
-# ---------------------------------------------------------------------------
+# -- read -------------------------------------------------------------------
 
 
 class TestRead:
@@ -131,9 +125,7 @@ class TestRead:
         assert "clob content" in result.file_data["content"]
 
 
-# ---------------------------------------------------------------------------
-# edit()
-# ---------------------------------------------------------------------------
+# -- edit -------------------------------------------------------------------
 
 
 class TestEdit:
@@ -179,9 +171,7 @@ class TestEdit:
         assert "not found" in result.error.lower()
 
 
-# ---------------------------------------------------------------------------
-# ls()
-# ---------------------------------------------------------------------------
+# -- ls ---------------------------------------------------------------------
 
 
 class TestLs:
@@ -204,9 +194,7 @@ class TestLs:
         assert any(e.get("is_dir") for e in result.entries)
 
 
-# ---------------------------------------------------------------------------
-# glob()
-# ---------------------------------------------------------------------------
+# -- glob -------------------------------------------------------------------
 
 
 class TestGlob:
@@ -228,9 +216,7 @@ class TestGlob:
         assert "/app/readme.md" not in matched_paths
 
 
-# ---------------------------------------------------------------------------
-# grep()
-# ---------------------------------------------------------------------------
+# -- grep -------------------------------------------------------------------
 
 
 class TestGrep:
@@ -250,9 +236,7 @@ class TestGrep:
         assert result.matches[0]["text"] == "import os"
 
 
-# ---------------------------------------------------------------------------
-# download_files()
-# ---------------------------------------------------------------------------
+# -- download_files ---------------------------------------------------------
 
 
 class TestDownloadFiles:
@@ -282,9 +266,7 @@ class TestDownloadFiles:
         assert responses[0].content is None
 
 
-# ---------------------------------------------------------------------------
-# upload_files()
-# ---------------------------------------------------------------------------
+# -- upload_files ------------------------------------------------------------
 
 
 class TestUploadFiles:

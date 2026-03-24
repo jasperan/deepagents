@@ -52,4 +52,4 @@ class TestOracleConfigFromEnv:
         config = OracleConfig()
         assert config.oracle_mode == "adb"
         assert config.oracle_user == "myuser"
-        assert config.oracle_password == "mypass"
+        assert config.oracle_password == "mypass"  # noqa: S105
