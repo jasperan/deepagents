@@ -1,0 +1,26 @@
+{
+  "name": "Deep Agents + Oracle",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [1521],
+  "containerEnv": {
+    "DEEPAGENTS_ORACLE_MODE": "freepdb",
+    "DEEPAGENTS_ORACLE_HOST": "oracle-free",
+    "DEEPAGENTS_ORACLE_PORT": "1521",
+    "DEEPAGENTS_ORACLE_SERVICE": "FREEPDB1",
+    "DEEPAGENTS_ORACLE_USER": "deepagents",
+    "DEEPAGENTS_ORACLE_PASSWORD": "DeepAgents2024"
+  },
+  "postCreateCommand": "cd libs/partners/oracle && uv sync --group test",
+  "postStartCommand": "bash oracle/scripts/setup-oracle.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "Oracle.oracledevtools"
+      ]
+    }
+  }
+}
