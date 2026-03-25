@@ -7,6 +7,7 @@ import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remoti
 
 import {AnimatedBackground} from '../components/AnimatedBackground';
 import {FeatureCards} from '../components/FeatureCards';
+import {MusicBed} from '../components/MusicBed';
 import {OutroCard} from '../components/OutroCard';
 import {PanelRenderer} from '../components/PanelRenderer';
 import {SceneHeader} from '../components/SceneHeader';
@@ -339,7 +340,9 @@ export const CampaignVideo = ({videoId}: CampaignVideoProps) => {
   const timing = linearTiming({durationInFrames: sceneDurations.transition});
 
   return (
-    <TransitionSeries>
+    <>
+      <MusicBed theme={video.theme} />
+      <TransitionSeries>
       <TransitionSeries.Sequence durationInFrames={sceneDurations.intro}>
         <IntroScene videoId={video.id} />
       </TransitionSeries.Sequence>
@@ -363,5 +366,6 @@ export const CampaignVideo = ({videoId}: CampaignVideoProps) => {
         <OutroScene videoId={video.id} />
       </TransitionSeries.Sequence>
     </TransitionSeries>
+    </>
   );
 };

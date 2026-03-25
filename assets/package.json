@@ -8,11 +8,13 @@
     "start": "remotion studio src/index.ts",
     "compositions": "remotion compositions src/index.ts",
     "typecheck": "tsc --noEmit",
-    "render:all": "node ./scripts/render-all.mjs"
+    "render:all": "node ./scripts/render-all.mjs",
+    "render:posters": "node ./scripts/render-posters.mjs"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
     "@remotion/google-fonts": "^4.0.0",
+    "@remotion/media": "^4.0.438",
     "@remotion/transitions": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
