@@ -31,6 +31,7 @@ npm run render:posters-vertical
 - Vertical masters render to `assets/renders/vertical/`
 - The compositions now include theme-based music beds from `assets/public/audio/`
 - Voiceover timing lives in `assets/voiceover/campaign-voiceover.md`
+- Social posting copy lives in `assets/social/`
 - Generated TTS is not included yet. The current pass prepares scripts and timings for either human recording or later ElevenLabs generation.
 - The 9:16 variants are rebuilt as native vertical edits, not cropped 16:9 masters.
 - Future screenshots, logos, and final music/voiceover assets can be dropped into `assets/public/`

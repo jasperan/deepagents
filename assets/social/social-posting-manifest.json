@@ -1,0 +1,92 @@
+[
+  {
+    "id": "memory-survives",
+    "video": "assets/renders/vertical/oracle-vertical-01-memory-survives.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-01-memory-survives.png",
+    "title": "Your agent kept its memory after the restart",
+    "thumbnail": "Memory survives restart",
+    "caption": "Most agent demos forget everything when the process dies. This fork pushes /memory, /history, and /skills into Oracle AI Database, so the next run keeps going from stored context instead of starting cold.",
+    "hashtags": ["#AI", "#Agents", "#Oracle", "#Python", "#Remotion"]
+  },
+  {
+    "id": "routing",
+    "video": "assets/renders/vertical/oracle-vertical-02-routing.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-02-routing.png",
+    "title": "Persistence is a routing decision",
+    "thumbnail": "Route memory on purpose",
+    "caption": "The Oracle story works because the persistence split is explicit. /memory, /history, and /skills go durable. Scratch work stays fast and local.",
+    "hashtags": ["#AIEngineering", "#Agents", "#Oracle", "#Python"]
+  },
+  {
+    "id": "system-of-record",
+    "video": "assets/renders/vertical/oracle-vertical-03-system-of-record.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-03-system-of-record.png",
+    "title": "Agent memory needs a real storage model",
+    "thumbnail": "Real storage model",
+    "caption": "This memory layer lands because it has a concrete shape. Writes resolve into Oracle SQL, and state lands in the da_files table with timestamps and namespaces.",
+    "hashtags": ["#Database", "#Oracle", "#AIAgents", "#Python"]
+  },
+  {
+    "id": "vector-search",
+    "video": "assets/renders/vertical/oracle-vertical-04-vector-search.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-04-vector-search.png",
+    "title": "Semantic memory inside Oracle AI Database",
+    "thumbnail": "Semantic memory",
+    "caption": "Keyword search misses too much. The vector path in this fork stores embeddings on write, then uses VECTOR_DISTANCE to pull memory back by meaning.",
+    "hashtags": ["#VectorSearch", "#Oracle", "#AI", "#Agents", "#RAG"]
+  },
+  {
+    "id": "one-line-setup",
+    "video": "assets/renders/vertical/oracle-vertical-05-one-line-setup.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-05-one-line-setup.png",
+    "title": "One line gets you an Oracle-backed agent",
+    "thumbnail": "One-line setup",
+    "caption": "The storage story is serious. The setup still stays short. create_oracle_deep_agent() wires the Oracle config, connection manager, backend routing, and memory defaults together.",
+    "hashtags": ["#Python", "#Agents", "#Oracle", "#DeveloperExperience"]
+  },
+  {
+    "id": "local-26ai",
+    "video": "assets/renders/vertical/oracle-vertical-06-local-with-26ai.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-06-local-with-26ai.png",
+    "title": "This Oracle story starts on a laptop",
+    "thumbnail": "Oracle on your laptop",
+    "caption": "A Docker profile brings up Oracle Database 26ai Free locally, then one setup script creates the user and schema so the memory path is live right away.",
+    "hashtags": ["#Oracle", "#Docker", "#Python", "#AIAgents"]
+  },
+  {
+    "id": "adb-bridge",
+    "video": "assets/renders/vertical/oracle-vertical-07-bridge-to-adb.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-07-bridge-to-adb.png",
+    "title": "The move to cloud should feel boring",
+    "thumbnail": "Local to ADB",
+    "caption": "Local mode uses host, port, and service. Cloud mode swaps to DSN and wallet-aware config. The agent factory and backend wiring still look the same.",
+    "hashtags": ["#Oracle", "#ADB", "#Cloud", "#Agents", "#Python"]
+  },
+  {
+    "id": "cleaner-architecture",
+    "video": "assets/renders/vertical/oracle-vertical-08-cleaner-architecture.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-08-cleaner-architecture.png",
+    "title": "A cleaner memory story starts with cleaner data architecture",
+    "thumbnail": "Less glue",
+    "caption": "This fork pulls persistent memory, semantic retrieval, and durable state toward one stronger center in Oracle AI Database. Fewer seams, less glue, easier to explain.",
+    "hashtags": ["#Architecture", "#Oracle", "#AIAgents", "#PlatformEngineering"]
+  },
+  {
+    "id": "why-oracle-changes-it",
+    "video": "assets/renders/vertical/oracle-vertical-09-production-shaped.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-09-production-shaped.png",
+    "title": "Oracle gives Deep Agents a more durable second act",
+    "thumbnail": "A more durable stack",
+    "caption": "Deep Agents already gives you planning, tools, sub-agents, and context handling. Oracle hardens durable memory, continuity across sessions, and the path from local to cloud.",
+    "hashtags": ["#AI", "#Agents", "#Oracle", "#Python", "#Platform"]
+  },
+  {
+    "id": "hero-film",
+    "video": "assets/renders/vertical/oracle-vertical-10-hero-film.mp4",
+    "poster": "assets/renders/posters-vertical/oracle-vertical-10-hero-film.png",
+    "title": "Deep Agents + Oracle AI Database",
+    "thumbnail": "Staying power",
+    "caption": "Deep Agents gives you the harness. Oracle AI Database gives it staying power: durable memory, semantic recall, and a path from local 26ai Free to Autonomous Database that actually lines up.",
+    "hashtags": ["#Oracle", "#AI", "#Agents", "#VectorSearch", "#Python"]
+  }
+]
