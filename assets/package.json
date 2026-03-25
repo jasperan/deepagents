@@ -9,7 +9,9 @@
     "compositions": "remotion compositions src/index.ts",
     "typecheck": "tsc --noEmit",
     "render:all": "node ./scripts/render-all.mjs",
-    "render:posters": "node ./scripts/render-posters.mjs"
+    "render:posters": "node ./scripts/render-posters.mjs",
+    "render:all-vertical": "node ./scripts/render-all-vertical.mjs",
+    "render:posters-vertical": "node ./scripts/render-posters-vertical.mjs"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",

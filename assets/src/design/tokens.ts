@@ -6,6 +6,12 @@ export const CANVAS = {
   heroDurationInFrames: 720,
 } as const;
 
+export const SOCIAL_CANVAS = {
+  width: 1080,
+  height: 1920,
+  fps: 30,
+} as const;
+
 export const palette = {
   bg: '#070B14',
   bgSoft: '#101827',
