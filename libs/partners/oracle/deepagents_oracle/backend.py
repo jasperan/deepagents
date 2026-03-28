@@ -12,6 +12,7 @@ import base64
 import logging
 from typing import TYPE_CHECKING, Any
 
+import oracledb
 from deepagents.backends.protocol import (
     BackendProtocol,
     EditResult,
@@ -148,6 +149,7 @@ class OracleStoreBackend(BackendProtocol):
         file_data = create_file_data(content)
         with self._cm.get_connection() as conn:
             with conn.cursor() as cur:
+                cur.setinputsizes(content=oracledb.DB_TYPE_CLOB)
                 cur.execute(
                     _MERGE_SQL,
                     {
@@ -219,6 +221,7 @@ class OracleStoreBackend(BackendProtocol):
                 new_content, occurrences = result
                 new_file_data = update_file_data(file_data, new_content)
 
+                cur.setinputsizes(content=oracledb.DB_TYPE_CLOB)
                 cur.execute(
                     _UPDATE_CONTENT_SQL,
                     {
@@ -308,6 +311,7 @@ class OracleStoreBackend(BackendProtocol):
             file_data = create_file_data(content_str, encoding=encoding)
             with self._cm.get_connection() as conn:
                 with conn.cursor() as cur:
+                    cur.setinputsizes(content=oracledb.DB_TYPE_CLOB)
                     cur.execute(
                         _MERGE_SQL,
                         {
