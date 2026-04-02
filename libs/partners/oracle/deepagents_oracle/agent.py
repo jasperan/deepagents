@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from deepagents import create_deep_agent
 from deepagents.backends import CompositeBackend, StateBackend
@@ -13,7 +13,9 @@ from deepagents_oracle.connection import OracleConnectionManager
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
+    from typing import Any
 
+    from deepagents.backends.protocol import BackendProtocol
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool
 
@@ -61,11 +63,11 @@ def create_oracle_deep_agent(
         namespace=namespace,
     )
 
-    routes = dict.fromkeys(persistent_routes, oracle_backend)
+    routes: dict[str, BackendProtocol] = dict.fromkeys(persistent_routes, oracle_backend)
 
     def _backend_factory(runtime: object) -> CompositeBackend:
         return CompositeBackend(
-            default=StateBackend(runtime),
+            default=StateBackend(runtime),  # type: ignore[arg-type]
             routes=routes,
         )
 
@@ -80,5 +82,5 @@ def create_oracle_deep_agent(
         backend=_backend_factory,
         memory=memory,
         skills=skills,
-        **kwargs,
+        **kwargs,  # type: ignore[arg-type]
     )
