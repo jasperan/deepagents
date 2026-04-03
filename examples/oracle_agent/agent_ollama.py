@@ -23,11 +23,11 @@ Usage:
 """
 
 from deepagents_oracle import create_oracle_deep_agent
+from deepagents_oracle.agent import DEFAULT_MODEL
 
-MODEL = "ollama:qwopus3.5:9b-v3"
-
+# No model= needed: create_oracle_deep_agent defaults to qwopus3.5 via Ollama.
+# Override with model="anthropic:claude-sonnet-4-6" for cloud inference.
 agent = create_oracle_deep_agent(
-    model=MODEL,
     system_prompt=(
         "You are a helpful research assistant running locally on qwopus3.5 via Ollama. "
         "You have persistent memory in Oracle Database. "
@@ -37,7 +37,7 @@ agent = create_oracle_deep_agent(
 )
 
 if __name__ == "__main__":
-    print(f"Deep Agent ready with model: {MODEL}")
+    print(f"Deep Agent ready with model: {DEFAULT_MODEL}")
     print("Oracle persistence enabled. Memory survives restarts.\n")
 
     prompts = [

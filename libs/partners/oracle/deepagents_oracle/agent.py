@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool
 
+DEFAULT_MODEL = "ollama:qwopus3.5:9b-v3"
 DEFAULT_PERSISTENT_ROUTES = ("/memory/", "/history/", "/skills/")
 
 
@@ -40,7 +41,7 @@ def create_oracle_deep_agent(
     ``StateBackend``.
 
     Args:
-        model: The model to use. Defaults to claude-sonnet-4-6.
+        model: The model to use. Defaults to ``ollama:qwopus3.5:9b-v3``.
         tools: Custom tools for the agent.
         oracle_config: Oracle connection config. Reads from env if None.
         namespace: Namespace for data isolation between agents.
@@ -71,6 +72,8 @@ def create_oracle_deep_agent(
             routes=routes,
         )
 
+    if model is None:
+        model = DEFAULT_MODEL
     if memory is None:
         memory = ["/memory/AGENTS.md"]
     if skills is None:
