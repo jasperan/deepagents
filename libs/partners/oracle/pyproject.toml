@@ -33,8 +33,13 @@ test = [
 requires = ["setuptools>=73.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["deepagents_oracle*", "skills*"]
+
 [tool.setuptools.package-data]
 "*" = ["py.typed"]
+"skills" = ["*/SKILL.md"]
 
 [tool.uv.sources]
 deepagents = { path = "../../deepagents", editable = true }

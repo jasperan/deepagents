@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from deepagents import create_deep_agent
@@ -19,8 +21,28 @@ if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langchain_core.tools import BaseTool
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_MODEL = "ollama:qwopus3.5:9b-v3"
 DEFAULT_PERSISTENT_ROUTES = ("/memory/", "/history/", "/skills/")
+SKILLS_DIR = str(Path(__file__).resolve().parent.parent / "skills")
+
+
+def _sync_bundled_skills(backend: OracleStoreBackend) -> None:
+    """Upload bundled SKILL.md files to Oracle so the SkillsMiddleware can read them."""
+    skills_path = Path(SKILLS_DIR)
+    if not skills_path.is_dir():
+        return
+    for skill_dir in sorted(skills_path.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_file.is_file():
+            continue
+        oracle_path = f"/skills/{skill_dir.name}/SKILL.md"
+        content = skill_file.read_text(encoding="utf-8")
+        backend.write(oracle_path, content)
+    logger.debug("Synced bundled skills to Oracle /skills/ path")
 
 
 def create_oracle_deep_agent(
@@ -39,6 +61,10 @@ def create_oracle_deep_agent(
     Sets up a ``CompositeBackend`` that routes persistent paths
     (memory, history, skills) to Oracle and ephemeral paths to
     ``StateBackend``.
+
+    Bundled Oracle skills (memory search, health monitor, data analyst, etc.)
+    are automatically synced to the ``/skills/`` path in Oracle so the agent
+    can discover and use them.
 
     Args:
         model: The model to use. Defaults to ``ollama:qwopus3.5:9b-v3``.
@@ -63,6 +89,9 @@ def create_oracle_deep_agent(
         connection_manager=conn_manager,
         namespace=namespace,
     )
+
+    # Sync bundled skills to Oracle so SkillsMiddleware can read them
+    _sync_bundled_skills(oracle_backend)
 
     routes: dict[str, BackendProtocol] = dict.fromkeys(persistent_routes, oracle_backend)
 
