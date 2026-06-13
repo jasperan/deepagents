@@ -127,7 +127,9 @@ libs/partners/oracle/     # Partner package (pip install deepagents-oracle)
     config.py              # OracleConfig (Pydantic BaseSettings)
     connection.py          # Connection pool manager
     backend.py             # OracleStoreBackend (BackendProtocol)
-    schema.py              # DDL for da_files table
+    vector.py              # OracleVectorBackend (semantic_grep via Oracle AI Vector Search)
+    schema.py              # DDL for da_files table (+ optional vector column)
+    _utils.py              # Shared CLOB/vector serialization helpers
     agent.py               # create_oracle_deep_agent() factory
 oracle/                    # Docker infrastructure
   docker-compose.yml       # FreePDB + ADB profiles

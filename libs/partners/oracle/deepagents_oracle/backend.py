@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import base64
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import oracledb
 from deepagents.backends.protocol import (
@@ -36,6 +36,8 @@ from deepagents.backends.utils import (
     slice_read_response,
     update_file_data,
 )
+
+from deepagents_oracle._utils import read_clob as _read_clob
 
 if TYPE_CHECKING:
     from deepagents_oracle.connection import OracleConnectionManager
@@ -74,16 +76,6 @@ UPDATE da_files
 SET content = :content, encoding = :encoding, modified_at = SYSTIMESTAMP
 WHERE namespace = :namespace AND file_path = :file_path
 """
-
-
-def _read_clob(value: Any) -> str:  # noqa: ANN401
-    """Read a CLOB/LOB value, handling both str and LOB objects."""
-    if isinstance(value, str):
-        return value
-    # oracledb LOB objects expose a .read() method
-    if hasattr(value, "read"):
-        return value.read()
-    return str(value)
 
 
 class OracleStoreBackend(BackendProtocol):

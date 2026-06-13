@@ -12,7 +12,8 @@ from typing import TYPE_CHECKING
 
 from deepagents.backends.protocol import GrepMatch, GrepResult
 
-from deepagents_oracle.backend import OracleStoreBackend, WriteResult, _read_clob, create_file_data
+from deepagents_oracle._utils import read_clob, vector_literal
+from deepagents_oracle.backend import OracleStoreBackend, WriteResult, create_file_data
 from deepagents_oracle.schema import init_schema
 
 if TYPE_CHECKING:
@@ -105,7 +106,7 @@ class OracleVectorBackend(OracleStoreBackend):
         self._ensure_initialized()
         file_data = create_file_data(content)
         embedding_vector = self._embeddings.embed_query(content)
-        embedding_str = "[" + ", ".join(str(v) for v in embedding_vector) + "]"
+        embedding_str = vector_literal(embedding_vector)
 
         with self._cm.get_connection() as conn:
             with conn.cursor() as cur:
@@ -147,7 +148,7 @@ class OracleVectorBackend(OracleStoreBackend):
         """
         self._ensure_initialized()
         query_vector = self._embeddings.embed_query(query)
-        qvec_str = "[" + ", ".join(str(v) for v in query_vector) + "]"
+        qvec_str = vector_literal(query_vector)
 
         if path is not None:
             sql = _SEMANTIC_SEARCH_WITH_PATH_SQL
@@ -170,7 +171,7 @@ class OracleVectorBackend(OracleStoreBackend):
             cur.execute(sql, params)
             for row in cur.fetchall():
                 fp, content_raw, _dist = row
-                content = _read_clob(content_raw)
+                content = read_clob(content_raw)
                 first_line = content.split("\n")[0] if content else ""
                 matches.append(GrepMatch(path=fp, line=1, text=first_line))
 

@@ -166,6 +166,26 @@ class CompositeBackend(BackendProtocol):
         )
         return backend, stripped_key
 
+    def _merge_files_update(self, res: WriteResult | EditResult) -> None:
+        """Best-effort merge of ``res.files_update`` into the default backend's state.
+
+        When a routed backend reports a state-backed update and the default
+        backend exposes runtime state, the update is merged so listings reflect
+        the change. Failures are intentionally swallowed: the default backend may
+        not carry runtime state, and the sync is purely a convenience.
+        """
+        if not res.files_update:
+            return
+        try:
+            runtime = getattr(self.default, "runtime", None)
+            if runtime is not None:
+                state = runtime.state
+                files = state.get("files", {})
+                files.update(res.files_update)
+                state["files"] = files
+        except Exception:  # noqa: BLE001, S110  # Intentional for best-effort state sync
+            pass
+
     @staticmethod
     def _coerce_ls_result(raw: LsResult | list[FileInfo]) -> LsResult:
         """Normalize legacy ``list[FileInfo]`` returns to `LsResult`."""
@@ -476,17 +496,7 @@ class CompositeBackend(BackendProtocol):
         res = backend.write(stripped_key, content)
         if res.path is not None:
             res = replace(res, path=file_path)
-        # If this is a state-backed update and default has state, merge so listings reflect changes
-        if res.files_update:
-            try:
-                runtime = getattr(self.default, "runtime", None)
-                if runtime is not None:
-                    state = runtime.state
-                    files = state.get("files", {})
-                    files.update(res.files_update)
-                    state["files"] = files
-            except Exception:  # noqa: BLE001, S110  # Intentional for best-effort state sync
-                pass
+        self._merge_files_update(res)
         return res
 
     async def awrite(
@@ -499,17 +509,7 @@ class CompositeBackend(BackendProtocol):
         res = await backend.awrite(stripped_key, content)
         if res.path is not None:
             res = replace(res, path=file_path)
-        # If this is a state-backed update and default has state, merge so listings reflect changes
-        if res.files_update:
-            try:
-                runtime = getattr(self.default, "runtime", None)
-                if runtime is not None:
-                    state = runtime.state
-                    files = state.get("files", {})
-                    files.update(res.files_update)
-                    state["files"] = files
-            except Exception:  # noqa: BLE001, S110  # Intentional for best-effort state sync
-                pass
+        self._merge_files_update(res)
         return res
 
     def edit(
@@ -534,16 +534,7 @@ class CompositeBackend(BackendProtocol):
         res = backend.edit(stripped_key, old_string, new_string, replace_all=replace_all)
         if res.path is not None:
             res = replace(res, path=file_path)
-        if res.files_update:
-            try:
-                runtime = getattr(self.default, "runtime", None)
-                if runtime is not None:
-                    state = runtime.state
-                    files = state.get("files", {})
-                    files.update(res.files_update)
-                    state["files"] = files
-            except Exception:  # noqa: BLE001, S110  # Intentional for best-effort state sync
-                pass
+        self._merge_files_update(res)
         return res
 
     async def aedit(
@@ -558,16 +549,7 @@ class CompositeBackend(BackendProtocol):
         res = await backend.aedit(stripped_key, old_string, new_string, replace_all=replace_all)
         if res.path is not None:
             res = replace(res, path=file_path)
-        if res.files_update:
-            try:
-                runtime = getattr(self.default, "runtime", None)
-                if runtime is not None:
-                    state = runtime.state
-                    files = state.get("files", {})
-                    files.update(res.files_update)
-                    state["files"] = files
-            except Exception:  # noqa: BLE001, S110  # Intentional for best-effort state sync
-                pass
+        self._merge_files_update(res)
         return res
 
     def execute(

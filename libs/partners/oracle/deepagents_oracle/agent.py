@@ -93,6 +93,8 @@ def create_oracle_deep_agent(
     # Sync bundled skills to Oracle so SkillsMiddleware can read them
     _sync_bundled_skills(oracle_backend)
 
+    # All persistent routes share the single Oracle backend instance; the
+    # namespace (not the route) is what isolates rows in da_files.
     routes: dict[str, BackendProtocol] = dict.fromkeys(persistent_routes, oracle_backend)
 
     def _backend_factory(runtime: object) -> CompositeBackend:
