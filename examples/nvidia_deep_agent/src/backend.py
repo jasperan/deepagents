@@ -1,6 +1,7 @@
 """Backend configuration: Modal sandbox with skills/memory uploaded on creation."""
 
 from pathlib import Path
+import shlex
 
 import modal
 from langchain_modal import ModalSandbox
@@ -58,7 +59,7 @@ def _seed_sandbox(backend: ModalSandbox) -> None:
 
     # Create parent directories inside the sandbox, then upload
     dirs = sorted({str(Path(p).parent) for p, _ in files})
-    backend.execute(f"mkdir -p {' '.join(dirs)}")
+    backend.execute(f"mkdir -p {' '.join(shlex.quote(d) for d in dirs)}")
     backend.upload_files(files)
 
 
