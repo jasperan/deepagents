@@ -135,7 +135,44 @@ oracle/                    # Docker infrastructure
   docker-compose.yml       # FreePDB + ADB profiles
   scripts/setup-oracle.sh  # User creation + schema init
 examples/oracle_agent/     # Working example
+gotui/                     # Optional Go terminal UI (see below)
 ```
+
+## Go Terminal UI (`gotui/`)
+
+An additional way to run Deep Agents: a Go front-end built on
+[Bubble Tea v2](https://github.com/charmbracelet/bubbletea),
+[Lip Gloss](https://github.com/charmbracelet/lipgloss),
+[Bubbles](https://github.com/charmbracelet/bubbles) and [Huh](https://github.com/charmbracelet/huh).
+
+It is a front-end, not a reimplementation. The thread browser decodes the CLI's
+own `threads list --json` envelope, deletion shells out to
+`deepagents threads delete`, and a run shells out to `deepagents -n <task> -q`.
+Nothing about agent execution, thread storage or tool policy is reproduced, so a
+Go user and a Python user get identical results from identical inputs.
+
+Build it (Go 1.25+; the `deepagents` CLI must be installed or pointed at):
+
+```bash
+cd gotui && go build ./cmd/deepagents-tui
+```
+
+Run it:
+
+```bash
+./deepagents-tui                 # full-screen browser: threads, detail, run, delete
+./deepagents-tui --threads       # list threads, then exit
+./deepagents-tui --threads --json   # forward the CLI's own JSON envelope
+./deepagents-tui --agents        # list agents
+./deepagents-tui --run "summarize the repo"
+./deepagents-tui --delete <thread_id> --yes
+```
+
+Useful flags: `--binary` (or `DEEPAGENTS_BIN`) to point at a specific CLI, plus
+`--limit`, `--agent`, `--sort`, `--branch` to filter the listing, `--model`,
+`--auto-approve` and `--shell-allow-list` for runs. When stdin is not a terminal,
+or `ACCESSIBLE` is set, the interactive UI is skipped in favour of plain prompts
+or the action flags above.
 
 ## Full Deep Agents Docs
 
